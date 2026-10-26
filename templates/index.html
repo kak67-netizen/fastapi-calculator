@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FastAPI Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 520px;
+      margin: 48px auto;
+      padding: 0 20px;
+      color: #20242a;
+    }
+
+    main {
+      padding: 28px;
+      border: 1px solid #d8dee8;
+      border-radius: 12px;
+      box-shadow: 0 4px 18px #17203312;
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: 600;
+    }
+
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      font-size: 1rem;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #1769aa;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0f4f84;
+    }
+
+    #result {
+      min-height: 1.5em;
+      margin-top: 20px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>FastAPI Calculator</h1>
+    <p>Enter two numbers, then choose an operation.</p>
+
+    <label for="a">First number</label>
+    <input id="a" type="number" step="any">
+
+    <label for="b">Second number</label>
+    <input id="b" type="number" step="any">
+
+    <div class="buttons">
+      <button id="add" data-operation="add">Add</button>
+      <button id="subtract" data-operation="subtract">Subtract</button>
+      <button id="multiply" data-operation="multiply">Multiply</button>
+      <button id="divide" data-operation="divide">Divide</button>
+    </div>
+
+    <p id="result" role="status" aria-live="polite"></p>
+  </main>
+
+  <script>
+    document.querySelectorAll("[data-operation]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const result = document.querySelector("#result");
+        const a = document.querySelector("#a").value;
+        const b = document.querySelector("#b").value;
+
+        if (a === "" || b === "") {
+          result.textContent = "Enter both numbers.";
+          return;
+        }
+
+        try {
+          const response = await fetch(`/${button.dataset.operation}`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({a: Number(a), b: Number(b)})
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.detail || "Calculation failed.");
+          }
+
+          result.textContent = `Result: ${data.result}`;
+        } catch (error) {
+          result.textContent = `Error: ${error.message}`;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
